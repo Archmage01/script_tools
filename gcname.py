@@ -92,4 +92,5 @@ def  getcfunction_header(filename):
             else:
                 print("extract ==> file:%s  not exist  "%filename)
         for i in range(len(cdef)):
-            print(cdef[i])
+            #print(cdef[i])
+            templatestr.create_stubs_file(cdef[i], i)
