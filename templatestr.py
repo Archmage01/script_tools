@@ -107,7 +107,7 @@ EXTERN_C_LINKAGE  %(return_type)s   CppTest_Stub_%(function_def)s
     /*- 如果装标志位为0,则执行原函数  */
     if(0 == __%(name)s_stub_flag)
     {
-        return %(function_def)s;
+        return %(name)s%(param_list)s;
     }
     /*- 执行打桩函数 */
     else
@@ -200,9 +200,9 @@ outline_patt_02   =  re.compile(r'^(//)|^(/\*)')  # 过滤掉改格式注释  /*-  */
 ret_typepatt01    =  re.compile(r'^(\w+\s)|^(\w+\*)')      #字母 + 空白 
 ret_typepatt02    =  re.compile(r'(\)$)')          #)结尾
 ret_typepatt03    =  re.compile(r'^(\w+\s+\*)|^(\w+\*)')      #字母 + 空白 + *
-functionname_patt = re.compile(r'(\w$)')      #字母结尾
-
-
+functionname_patt =  re.compile(r'(\w$)')      #字母结尾
+paramlist_patt    =  re.compile(r'\(.*\)')     #()
+paramlist_patt01  =  re.compile(r'(\*+\w$)')  # cosnt  test *dst
 
 def  create_stubs_file(functionname, countnum):
     str_const  = "const"
@@ -221,6 +221,8 @@ def  create_stubs_file(functionname, countnum):
             ret_type     = ""  #函数返回值
             name_real    = ""  #函数名字
             function_def = ""  #函数原定义
+            param_lists  = ""  #函数调用参数列表
+            param_lists  = get_f_param_str(functionname) 
             #print(functionname)
             ret_type03 = ret_typepatt03.search(functionname)
             function_def  =   functionname
@@ -247,9 +249,9 @@ def  create_stubs_file(functionname, countnum):
                 name_real = functionname.split(" ")[-1]
                 #print(functionname)
                 function_def = name_real +"("+ t_function_def 
-            print("ret: %s name: %s  def: %s"%(ret_type,name_real,function_def))
+            #print("ret: %s name: %s  def: %s"%(ret_type,name_real,function_def))
             keymap = {'name': name_real,'function_def': function_def,
-            'return_type': ret_type,'countnum':str(countnum) }
+            'return_type': ret_type,'countnum':str(countnum),"param_list":param_lists }
 
             if False == os.path.exists("test_stubs.c"):
                 testfile = open("test_stubs.c","a")   
@@ -262,6 +264,48 @@ def  create_stubs_file(functionname, countnum):
         else:
             pass
         
+def  get_f_param_str(functionname):
+    ret_param_str = "( "
+    ret = paramlist_patt.search(functionname)
+    #必定进该分支
+    if ret is not None:
+        ret =  ret.group().strip()
+        ret =  ret.split("(")[-1]
+        ret =  ret.split(")")[0].strip()
+        #计算参数个数
+        param_num  = re.findall(r",",ret)
+        if len(param_num) > 0 :
+            #多个参数
+            ret = ret.split(",")
+            for i in range(len(ret)):
+                ret[i] = ret[i].strip()
+                contain_point   = ret_typepatt03.search(ret[i])
+                contain_point01 = paramlist_patt01.search(ret[i])
+                if contain_point is not None or contain_point01 is not None  :  #含指针
+                    ret01 = ret[i].split("*")[-1]
+                    if i !=  (len(ret)-1):
+                        ret_param_str = ret_param_str + ret01 + " , "
+                    else:
+                        ret_param_str = ret_param_str + ret01
+                else:  
+                    ret01 = ret[i].split(" ")[-1]
+                    if i !=  (len(ret)-1):
+                        ret_param_str = ret_param_str + ret01 + " , "
+                    else:
+                        ret_param_str = ret_param_str + ret01
+        else:
+            contain_point = ret_typepatt03.search(ret)
+            contain_point01 = paramlist_patt01.search(ret)
+            if contain_point is not None or contain_point01 is not None :  #含指针
+                ret01 = ret.split("*")[-1]
+                ret_param_str = ret_param_str + ret01
+            else:  #不含指针 
+                ret01 = ret.split(" ")[-1] 
+                ret_param_str = ret_param_str + ret01
+        ret_param_str = ret_param_str + " )"
+    else:
+        pass
+    return ret_param_str
 
 if __name__ == "__main__":
     src = [

@@ -11,7 +11,7 @@ import  build_cmd
 ''' 
 
 __Author__  = "yang.gan"
-__Version__ = "°æ±¾  0.0.3 "
+__Version__ = "version: 0.0.4 "
 
 
 def version_function():
