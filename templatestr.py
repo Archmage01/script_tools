@@ -141,12 +141,9 @@ EXTERN_C_LINKAGE  %(return_type)s   CppTest_Stub_%(function_def)s
 }
 """
 
-ret_typepatt01 =  re.compile(r'^(\w+\s)')
-ret_typepatt02 =  re.compile(r'^(\w+\s+\*)')
-namepatt01 =  re.compile(r'((\W)+\w+)')
-temppatt01 =  re.compile(r'(\w+.*)')
 
 
+'''
 def  create_stubs_file(functionname, countnum):
     temp =  functionname.split("(")
     ret_type =  ret_typepatt02.search(temp[0]) 
@@ -157,7 +154,7 @@ def  create_stubs_file(functionname, countnum):
     else:
         ret_type =  ret_typepatt01.search(temp[0])  
         if ret_type is not None:
-            ret_type = ret_type.group()
+            ret_type = ret_type.group()   
             print(ret_type)
         else:
             print("match  function  ret_type err")
@@ -174,17 +171,103 @@ def  create_stubs_file(functionname, countnum):
     function_def =  functionname.split(ret_type)
     function_def =  function_def[-1]
     function_def =  temppatt01.search(function_def)
-    function_def  = function_def.group()
-    print(function_def)
+    if  function_def is not  None:
+        function_def  = function_def.group()
+        print(function_def)
+    else:
+        function_def = "NULL"
 
     keymap = {'name': name_real,'function_def': function_def,
     'return_type': ret_type,'countnum':str(countnum) }
 
     if False == os.path.exists("test_stubs.c"):
-        testfile = open("test_stubs.c","a")   
-        testfile.write(stub_temlate%keymap)
-        testfile.close()
+        pass
+        #os.remove("test_stubs.c")
+        #testfile = open("test_stubs.c","w")   
+        # testfile.write(stub_temlate%keymap)
+        # testfile.close()
     else:
-        testfile = open("test_stubs.c","a")   
-        testfile.write(stub_temlate%keymap)
-        testfile.close()
+        pass
+        # testfile = open("test_stubs.c","a")   
+        # testfile.write(stub_temlate%keymap)
+        # testfile.close()
+'''
+
+
+outline_patt_00   =  re.compile(r'(;$)')  #过滤    ; 结束的行 不处理
+outline_patt_01   =  re.compile(r'(.*\*/$)')      # 过滤掉改格式注释  /*-  */   
+outline_patt_02   =  re.compile(r'^(//)|^(/\*)')  # 过滤掉改格式注释  /*-  */  
+ret_typepatt01    =  re.compile(r'^(\w+\s)|^(\w+\*)')      #字母 + 空白 
+ret_typepatt02    =  re.compile(r'(\)$)')          #)结尾
+ret_typepatt03    =  re.compile(r'^(\w+\s+\*)|^(\w+\*)')      #字母 + 空白 + *
+functionname_patt = re.compile(r'(\w$)')      #字母结尾
+
+
+
+def  create_stubs_file(functionname, countnum):
+    str_const  = "const"
+    str_static = "static"
+    functionname = functionname.strip() 
+    fault_line00 = outline_patt_00.search(functionname)
+    fault_line01 = outline_patt_01.search(functionname)
+    fault_line02 = outline_patt_02.search(functionname)
+    if  fault_line00 is not None or  fault_line01 is not None  or  fault_line02 is not None: #
+        pass
+    else:
+        ret_type01 = ret_typepatt01.search(functionname)
+        ret_type02 = ret_typepatt02.search(functionname)
+        if ret_type01 is not None and  ret_type02 is not None:
+            #(该层 才是实际过滤部分条件 满足函数定义的条件)
+            ret_type     = ""  #函数返回值
+            name_real    = ""  #函数名字
+            function_def = ""  #函数原定义
+            #print(functionname)
+            ret_type03 = ret_typepatt03.search(functionname)
+            function_def  =   functionname
+            if ret_type03 is not None:
+                ret_type = ret_type03.group()
+                ret_type = ret_type.split("*")[0]
+                ret_type = ret_type.strip() + "  *"
+                #是不是返回指针的函数   目前只考虑返回单层指针的函数
+                #print(ret_type)
+                #函数名字
+                functionname = functionname.split("(")
+                t_function_def = functionname[-1]
+                functionname = functionname[0].strip()
+                name_real = functionname.split("*")[-1].strip()
+                #print(functionname)
+                function_def = name_real +"("+ t_function_def 
+            else:
+                ret_type =  ret_type01.group()
+                ret_type =  ret_type.strip()
+                #函数名字
+                functionname = functionname.split("(")
+                t_function_def = functionname[-1]
+                functionname = functionname[0].strip()
+                name_real = functionname.split(" ")[-1]
+                #print(functionname)
+                function_def = name_real +"("+ t_function_def 
+            print("ret: %s name: %s  def: %s"%(ret_type,name_real,function_def))
+            keymap = {'name': name_real,'function_def': function_def,
+            'return_type': ret_type,'countnum':str(countnum) }
+
+            if False == os.path.exists("test_stubs.c"):
+                testfile = open("test_stubs.c","a")   
+                testfile.write(stub_temlate%keymap)
+                testfile.close()
+            else:
+                testfile = open("test_stubs.c","a")   
+                testfile.write(stub_temlate%keymap)
+                testfile.close()
+        else:
+            pass
+        
+
+if __name__ == "__main__":
+    src = [
+        "  uint16_t   get_location_base_num(ws_sequence_t *src_sequence_stb, uint32_t   ci_id )",
+        "  uint32_t   *get_location_base_id_point(ws_sequence_t  *src_sequence_stb, uint32_t   ci_id ) ", 
+    ]
+    for  i in range(len(src)):
+        create_stubs_file(src[i], i)
+        print(" ")

@@ -9,7 +9,6 @@ import  templatestr
 count_fcase_pattern =  re.compile(r"测试案例编号")
 
 
-
 def  get_dir_filename(loacal_dir):
     for root, dirs, files in os.walk( loacal_dir):
         #print(root) #当前目录路径 
@@ -91,6 +90,8 @@ def  getcfunction_header(filename):
                         pass  
             else:
                 print("extract ==> file:%s  not exist  "%filename)
+        if True == os.path.exists("test_stubs.c"):
+            os.remove("test_stubs.c")
         for i in range(len(cdef)):
             #print(cdef[i])
             templatestr.create_stubs_file(cdef[i], i)
