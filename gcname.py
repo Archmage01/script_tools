@@ -17,7 +17,7 @@ def  get_dir_filename(loacal_dir):
     return (files)
 
 #解析每个行
-def  line_parser(line ):
+def  line_parser(line):
     #line = line.strip().strip('\n')
     ret = 0 
     find = re.findall(r"测试案例编号",line)

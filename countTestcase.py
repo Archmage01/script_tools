@@ -82,12 +82,16 @@ def  parser_percent_data(src, recv_dst ):
 #count  test case num ´ıÏ¸»¯´¦Àí
 def  count_test_case_num(functionname, cppfilename):
     case_num = 0 
+    functionname = functionname.strip()
     with open(cppfilename,encoding='gbk') as f:
+        usr_fun_patt01 = re.compile(r'%s+\(.*\)'%functionname)
+        usr_fun_patt02 = re.compile(r';$')
         lines = f.readlines()
         for  line  in  lines:
-            find = re.findall(r"²âÊÔ°¸Àı±àºÅ",line)
-            if len(find) > 0:
-                case_num = case_num + len(find)
+            ret01 =  usr_fun_patt01.search(line)
+            ret02 =  usr_fun_patt02.search(line)
+            if ret01 is not None and  ret02 is not None :
+                case_num = case_num + 1
         f.close()
     return  (case_num)
 
