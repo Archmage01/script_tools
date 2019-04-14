@@ -9,12 +9,6 @@ import  templatestr
 count_fcase_pattern =  re.compile(r"测试案例编号")
 
 
-def  get_dir_filename(loacal_dir):
-    for root, dirs, files in os.walk( loacal_dir):
-        #print(root) #当前目录路径 
-        #print(dirs) #当前路径下所有子目录 
-        print(files) #当前路径下所有非目录子文件 
-    return (files)
 
 #解析每个行
 def  line_parser(line):
@@ -24,8 +18,6 @@ def  line_parser(line):
     if len(find) > 0 :
         ret = ret + len(find)
     return ret
-
-
 
 
 #解析每个.c文件
@@ -43,21 +35,23 @@ def  extract_cfile(argv):
     loacal_dir = os.getcwd()
     case_num = 0 
     t_ret = 0 
-    filelist = get_dir_filename(loacal_dir)
-    if(len(filelist)>0):
-        for i in  filelist:
-            cpptype = cpppattern.search(i)
-            if  cpptype is not None:
-                with open(i,encoding='gbk') as f:
-                    lines = f.readlines()
-                    t_ret = per_file_parser(lines)
-                    #print(i + "  num:%d"%t_ret)
-                    case_num = case_num + t_ret
-            else:
-                print("%s is not  .cpp"%i)
-        print("extract ==> count case_num: %d"%case_num)
-    else:
-        print("extract: ==>> loacal dir not exist  .c  file")
+    for root, dirs, files in os.walk( loacal_dir):
+        #print(root) #当前目录路径 
+        #print(dirs) #当前路径下所有子目录 
+        print(files) #当前路径下所有非目录子文件 
+        if(len(files)>0):
+            os.chdir(root)
+            for i in  files:
+                cpptype = cpppattern.search(i)
+                if  cpptype is not None:
+                    with open(i,encoding='gbk') as f:
+                        lines = f.readlines()
+                        t_ret = per_file_parser(lines)
+                        #print(i + "  num:%d"%t_ret)
+                        case_num = case_num + t_ret
+                else:
+                    print("%s is not  .cpp"%i)
+    print("extract ==> count case_num: %d"%case_num)
 
 
 func_def_pattern  = re.compile(r'^(\w+\s+)+(\w+)\s*\(\s*(.+)\s*(\)?|(\)\{)?)')
