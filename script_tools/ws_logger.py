@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import  os,sys,time,datetime,socket,threading,time,re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
@@ -87,17 +88,12 @@ class wslogger(QWidget):
     def udp_receive(self):
         #UDP通信接受报文
         self.skt=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.skt.bind(('',11506))
+        self.skt.bind(('',9003))
         while True:
             data,addr=self.skt.recvfrom(1472)
-            self.a=[]
-            for i in data:
-                #print(type(i))
-                self.a.append(i)
-            l = [hex(int(i)) for i in self.a]
-            print(" ".join(l))
             if  0 == self.stop_flag:
-                self.emit_signal.emit(" ".join(l)+"\n")
+                #self.emit_signal.emit(" ".join(l)+"\n")
+                self.emit_signal.emit(data.decode('utf-8')+"\n")
             
 
     def  slot_port_print(self):
