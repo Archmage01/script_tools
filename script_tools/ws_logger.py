@@ -1,4 +1,4 @@
-import  os,sys,time,datetime,socket,threading,time
+import  os,sys,time,datetime,socket,threading,time,re
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 
@@ -7,9 +7,12 @@ __auther__ = "Lancer"
 MAXlen=8*1024*1024    #当log日志数据长度大于时，关闭当前日志文件，并打开一个新的日志文件
 MAXLINE=10000         #GUI中文本框中能显示的最大行数
 
+count_num = 0 
+
 #QTabWidget
 
 class wslogger(QWidget):
+    emit_signal = QtCore.pyqtSignal(str)
     def  __init__(self, parent=None):
         super(wslogger,self).__init__(parent)
         self.resize(1000, 800)
@@ -60,51 +63,56 @@ class wslogger(QWidget):
         #self.btnWidget.setStyleSheet("background:rgba(0,0,0,0.2)")
         self.setStyleSheet(".QLabel{color:red;} .QPushButton{color:green;} ")
         self.port_btn.clicked.connect(self.slot_port_print)
+        self.stop_btn.clicked.connect(self.stop_flag_set )
+        self.clear_btn.clicked.connect(self.clear )
+        #stop_flag
+        self.stop_flag  = 0 
+        #更新线程
+        self.t=threading.Thread(target=self.udp_receive)
+        self.t.start() 
+        self.emit_signal.connect(self.main_loop)
+
+
+    def  stop_flag_set(self):
+        if  0 == self.stop_flag:
+            self.stop_flag  = 1
+            self.stop_btn.setText("开始")
+        else:
+            self.stop_flag = 0 
+            self.stop_btn.setText("停止")
+
+    def  clear(self):
+        self.textEdit01.clear()
+
+    def udp_receive(self):
+        #UDP通信接受报文
+        self.skt=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.skt.bind(('',11506))
+        while True:
+            data,addr=self.skt.recvfrom(1472)
+            self.a=[]
+            for i in data:
+                #print(type(i))
+                self.a.append(i)
+            l = [hex(int(i)) for i in self.a]
+            print(" ".join(l))
+            if  0 == self.stop_flag:
+                self.emit_signal.emit(" ".join(l)+"\n")
+            
 
     def  slot_port_print(self):
-        print("选择port")
+        global count_num 
+        count_num = count_num -1
+        print("选择port  %d "%count_num)
 
-def runner():
-    print("runner") 
-
-def ui():
-    print("ui") 
-    app = QApplication(sys.argv)
-    demo = wslogger() 
-    demo.show()
-    sys.exit(app.exec_())
-
-
-def receiver():
-    print("receiver") 
-    skt=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    skt.bind(('',11506))
-    while True:
-        data,addr = skt.recvfrom(1472)
-        a=[]
-        for i in data:
-            #print(type(i))
-            a.append(i)
-        #print("{}".format(self.a))
-        l = [hex(int(i)) for i in a]
-        print(" ".join(l))
-
-def create_pthread():
-    threads = []
-    t1 = threading.Thread(target = runner)
-    t2 = threading.Thread(target = ui)
-    t3 = threading.Thread(target = receiver)
-
-    threads.append(t1)
-    threads.append(t2)
-    threads.append(t3)
-
-    for t in threads:
-        # t.setDaemon(True)
-        t.start()
-        time.sleep(0.2)
+    def  main_loop(self,data):
+        print(data)
+        self.textEdit01.insertPlainText(data)
+        pass   
 
 if __name__ == "__main__":
-    #创建线程，启动runner、start
-    create_pthread()
+    app = QApplication(sys.argv)
+    demo = wslogger()
+    demo.show()
+    sys.exit(app.exec_())
 
