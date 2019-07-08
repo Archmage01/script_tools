@@ -2,7 +2,7 @@
 import  os,sys,time,datetime,socket,re,psutil,sqlite3
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
-from PyQt5.QtChart import *
+#from PyQt5.QtChart import *
 
 __version__ = "V0.0.1"
 __auther__  = "Lancer"
@@ -20,19 +20,19 @@ class bitwidget(QFrame):
         super(bitwidget,self).__init__(parent)
         self.zero_pixmap = QtGui.QPixmap ("white.png")
         self.one_pixmap = QtGui.QPixmap ("green.png")
-        self.resize(100,20)
-        self.setFixedSize(100,20) #w h
+        self.resize(200,20)
+        self.setFixedSize(200,20) #w h
         self.mainlayout = QHBoxLayout(self) 
         self.labelname = QLabel(labelnames,self) #
-        self.labelname.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+        self.labelname.setAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.labelvalue = QLabel(self) 
-        self.labelvalue.setPixmap (self.zero_pixmap)  # 在label上显示图片
+        self.labelvalue.setPixmap (self.zero_pixmap)  # 在label上显示图�?
         self.labelvalue.setScaledContents (False)  # 不让图片自适应label大小
-        self.labelvalue.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+        self.labelvalue.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)  #QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter
         self.mainlayout.addWidget(self.labelname)
         #self.mainlayout.addStretch(1)
         self.mainlayout.addWidget(self.labelvalue)
-        self.mainlayout.setStretchFactor(self.labelname,2)
+        self.mainlayout.setStretchFactor(self.labelname,4)
         self.mainlayout.setStretchFactor(self.labelvalue,1)
         self.setLayout(self.mainlayout)
         self.mainlayout.setContentsMargins(0, 0, 0, 0)
@@ -45,9 +45,9 @@ class bitwidget(QFrame):
 
     def setvalue(self):
         if  self.value == 1 :
-            self.labelvalue.setPixmap (self.one_pixmap)  # 在label上显示图片
+            self.labelvalue.setPixmap (self.one_pixmap)  
         else:
-            self.labelvalue.setPixmap (self.zero_pixmap)  # 在label上显示图片
+            self.labelvalue.setPixmap (self.zero_pixmap) 
         
 
 class  myscript(QWidget):
@@ -55,12 +55,10 @@ class  myscript(QWidget):
         super(myscript,self).__init__(parent)
         self.resize(1000, 800)
         self.setWindowTitle("连锁IO码位查询工具: "+ __version__ + "  作者: " + __auther__ + "   "+ __modifytime__)
+        self.setAcceptDrops(True)
 
         dlg = QFileDialog()
         self.filenames = []
-        # dlg.setFileMode(QFileDialog.AnyFile)
-        # #设置过滤器
-        # dlg.setFilter( QDir.Files  )
 
         if dlg.exec_():
             filenames= dlg.selectedFiles()
@@ -70,7 +68,7 @@ class  myscript(QWidget):
         #
         conn = sqlite3.connect(filenames[0])
         c = conn.cursor()
-        c.execute("""select * from  driveIO""")
+        c.execute("""select * from  driverinfo""")
         self.dbdata = c.fetchall()
         #print(self.dbdata)
         print(len(self.dbdata))
@@ -112,21 +110,22 @@ class  myscript(QWidget):
         #test
         self.byte_label_list = [] 
         for i in  range(len(self.dbdata)):
-            tttbut = bitwidget("%s %s"%(i,self.dbdata[i][1]),self)
+            tttbut = bitwidget("%s %s"%(i,self.dbdata[i][1]),self) # 6  1
             self.byte_label_list.append(tttbut)
-            self.byte_label_list[i].move(100*int(i/24), 20*int(i%24)+50+(int(i%24)))  #x  y 绝对布局
+            self.byte_label_list[i].move(200*int(i/24), 20*int(i%24)+50+(int(i%24)))  #x  y 绝对布局
             #self.iolayout.addWidget(self.byte_label_list[i],i%24,int(i/24))
         self.frame.setLayout(self.iolayout)
         #滚动条
         self.frame.resize(1200,800)
-        self.scroll = QScrollArea(self.frame)
+        self.scroll = QScrollArea()
+        # self.scroll.setWidget(self)
         #self.scroll.setWidget(self.frame)
         #获取配置db文件
         #QFileDialog.getOpenFileNames(None, "请选择要添加的db文件", os.getcwd() , "Text Files (*.db);;All Files (*)")
 
 
         #style
-        self.setStyleSheet("background: lightgray; color:red; ") #border:1px solid black;
+        self.setStyleSheet("background: lightgray; color:black; ") #border:1px solid black;
         #信号槽
         self.upbtn.clicked.connect(self.updatavalue)
         self.signal_upbtn.clicked.connect(self.signal_updatavalue)
