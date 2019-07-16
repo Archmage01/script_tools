@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import  os,sys,time,datetime,socket,re,psutil,sqlite3
+import  os,sys,re,psutil,sqlite3
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
-#from PyQt5.QtChart import *
+#import numpy as np
 
 __version__ = "V0.0.3"
 __auther__  = "Lancer"
@@ -37,8 +37,6 @@ class bitwidget(QWidget):
         self.setLayout(self.mainlayout)
         self.mainlayout.setContentsMargins(0, 0, 0, 0)
         self.mainlayout.setSpacing(0)
-        #self.setStyleSheet("background: lightgray; color:red; border:1px solid red; ") #border:1px solid black;
-        #data
         self.index = 0
         self.value = 0
         self.name =  labelnames
@@ -50,102 +48,64 @@ class bitwidget(QWidget):
             self.labelvalue.setPixmap (self.zero_pixmap) 
         
 
-class  myscript(QWidget):
+class  myscript(QScrollArea):
     def  __init__(self, parent=None):
         super(myscript,self).__init__(parent)
-        self.resize(1300, 600)
-        self.setWindowTitle("连锁IO码位查询工具: "+ __version__ + "  作者: " + __auther__ + "   "+ __modifytime__)
         self.desktop = QApplication.desktop()
-        #获取显示器分辨率大小
         self.screenRect = self.desktop.screenGeometry()
         self.height = self.screenRect.height()
         self.width = self.screenRect.width()
-        print( self.width, self.height )
-        self.resize(self.width-500, self.height -200)
-
-
+        self.resize(self.width*3/4, self.height*3/4) #w h
+        self.setWindowTitle("连锁IO码位查询工具: "+ __version__ + "  作者: " + __auther__ + "   "+ __modifytime__)
+        self.mainwidget = QWidget()
+        self.setWidget(self.mainwidget)
+        #读取db文件
         dlg = QFileDialog()
         self.filenames = []
 
         if dlg.exec_():
             filenames= dlg.selectedFiles()
-            #f = open(filenames[0], 'r') 
         print(os.getcwd())
-
-        #
         conn = sqlite3.connect(filenames[0])
         c = conn.cursor()
         c.execute("""select * from  driverinfo""")
         self.dbdata = c.fetchall()
-        #print(self.dbdata)
-        print(len(self.dbdata))
-        #####################################################################
-        self.mainframe = QWidget(self)
-        self.mainframe.resize(self.width-500,self.height -200)
-        self.ioboard   = QWidget()
-        self.ioboard.resize( self.width*2, self.height) #######设置滚动条的尺寸  
-        self.scroll = QScrollArea()
-        self.scroll.setWidget(self.ioboard)
-        self.mainlayout  = QVBoxLayout()
-        self.mainlayout.addWidget(self.scroll)
-        self.mainframe.setLayout(self.mainlayout)
-
+        #UI 创建处理UI分布
         self.lineedit    = QLineEdit()
-        self.upbtn = QPushButton("全部查询")
+        self.upbtn = QPushButton("查询IO码位")
         self.upbtn.setFixedSize(90,25)
-        self.signallineedit    = QLineEdit("0x00")
-        self.signallineedit.setFixedSize(90,25)
-        self.signal_byteindex   =  QComboBox()
-        self.signal_byteindex.setFixedSize(90,25)
-        self.signal_upbtn = QPushButton("单字节查询")
-        self.signal_upbtn.setFixedSize(90,25)
         self.clear_upbtn = QPushButton("重置")
         self.clear_upbtn.setFixedSize(90,25)
-        self.mainlayoutio  = QVBoxLayout(self.ioboard)
         self.inputlayout = QHBoxLayout() 
-        self.inputlayout.addWidget(self.signal_upbtn)
-        self.inputlayout.addWidget(self.signal_byteindex)
-        self.inputlayout.addWidget(self.signallineedit) 
-        self.inputlayout.addWidget(self.clear_upbtn) 
-        self.inputlayout.addWidget(self.upbtn) 
-        self.inputlayout.addWidget(self.lineedit) 
-        self.inputlayout.setContentsMargins(0,0,0,0) #上下左右
-        self.inputlayout.setStretchFactor(self.signal_upbtn,1)
-        self.inputlayout.setStretchFactor(self.signal_byteindex,1)
-        self.inputlayout.setStretchFactor(self.signallineedit,1)
-        self.inputlayout.setStretchFactor(self.clear_upbtn,1)
-        self.inputlayout.setStretchFactor(self.upbtn,1)
-        self.inputlayout.setStretchFactor(self.lineedit,10)
-        self.iolayout    = QGridLayout(self.ioboard)
-        self.frame = QFrame()
+        self.inputlayout.addWidget(self.clear_upbtn)
+        self.inputlayout.addWidget(self.upbtn)
+        self.inputlayout.addWidget(self.lineedit)
 
-        for  i in  range(int((len(self.dbdata)+7)/8)):
-            self.signal_byteindex.addItem("%d"%(i))
+        self.boardlayout = QGridLayout() 
+        self.mainlayout  = QVBoxLayout()
+        self.mainlayout.addLayout(self.inputlayout)
+        self.mainlayout.addLayout(self.boardlayout)
+        self.mainlayout.addStretch(1)
+        self.setLayout(self.mainlayout)
+         #每个小单元存储24 io  计算个数
+        self.iobitnum = int(len(self.dbdata))
+        self.boardnum = (self.iobitnum + 23)/24 
+        if self.boardnum*200 <  self.width*3/4:
+            self.mainwidget.resize(self.width*3/4, self.height*3/4) #reset size
+        else:
+            self.mainwidget.resize(self.boardnum*200,self.height) #reset size
 
-        self.mainlayoutio.addLayout(self.inputlayout)
-        self.mainlayoutio.addWidget(self.frame)
-        self.mainlayoutio.setStretchFactor(self.inputlayout,1)
-        self.mainlayoutio.setStretchFactor(self.iolayout,10)
-        self.mainlayoutio.addStretch(1)
-        self.ioboard.setLayout(self.mainlayoutio)
-
-        #test
-        self.byte_label_list = [] 
-        for i in  range(len(self.dbdata)):
-            tttbut = bitwidget("%s %s"%(i,self.dbdata[i][1]),self.ioboard) # 6  1
+        self.byte_label_list = []
+        for i in  range(len(self.dbdata)): 
+            tttbut = bitwidget("%s %s"%(i,self.dbdata[i][1]),self.mainwidget) # 6  1
             self.byte_label_list.append(tttbut)
-            self.byte_label_list[i].move(200*int(i/24), 20*int(i%24)+50+(int(i%24)))  #x  y 绝对布局
-            #self.iolayout.addWidget(self.byte_label_list[i],i%24,int(i/24))
-        self.frame.setLayout(self.iolayout)
-
-        self.setStyleSheet("background: lightgray; color:black; ") #border:1px solid black;
+            self.byte_label_list[i].move(200*int(i/24), 20*int(i%24)+50+(int(i%24)))
         #信号槽
         self.upbtn.clicked.connect(self.updatavalue)
-        self.signal_upbtn.clicked.connect(self.signal_updatavalue)
         self.clear_upbtn.clicked.connect(self.clear_io)
-        
+
     def clear_io(self):
-        for i in  range(len(self.dbdata)):
+        for i in  range(self.iobitnum):
             self.byte_label_list[i].value = 0
             self.byte_label_list[i].setvalue()
 
@@ -187,18 +147,6 @@ class  myscript(QWidget):
         else:
             QMessageBox.warning(self, '错误提示信息',"输入码位长度不对:%d 实际配置:%d 字节"%(bytelen,expect_len))
 
-    def signal_updatavalue(self):
-        getvalue = int(self.signallineedit.text(),16)
-        index  =  int(self.signal_byteindex.currentText())
-        print(getvalue, index )
-        for i  in  range((index*8),(index+1)*8):
-            if i < len(self.dbdata):
-                bit_n = i%8
-                self.byte_label_list[i].value = self.get_bit_value(getvalue,bit_n+1)
-                self.byte_label_list[i].setvalue()
-            else:
-                pass
-        
     def  get_bit_value(self, src ,nbit):
         dst = 0
         if src>255:
