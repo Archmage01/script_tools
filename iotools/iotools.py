@@ -4,15 +4,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 #from PyQt5.QtChart import *
 
-__version__ = "V0.0.2"
+__version__ = "V0.0.3"
 __auther__  = "Lancer"
-__modifytime__ = "20190708"
+__modifytime__ = "201907016"
 
 '''
 Version 0.0.1  20190707  创建本工具: 通过读取线路数据db文件,创建UI,便于查询驱动采集码位
 Version 0.0.2  20190707  重新布局UI  完善功能
+Version 0.0.3  20190716  支持查询全部数据(基本功能完成)
 '''
-
 
 
 class bitwidget(QWidget):
@@ -150,11 +150,44 @@ class  myscript(QWidget):
             self.byte_label_list[i].setvalue()
 
     def updatavalue(self):
-        for i in  range(len(self.dbdata)):
-            self.byte_label_list[i].value = 1
-            self.byte_label_list[i].setvalue()
+        bytelen =  (int(len(self.lineedit.text().strip())+1)//2)
+        expect_len =  len(self.dbdata)
+        expect_len = int((expect_len + 7)/8)
+        print(self.lineedit.text())
+        regex_input = '(([0-9]|[A-F]|[a-f])+)'
+        inputstr = self.lineedit.text().strip()
+        rr1 = re.compile(regex_input)
+        if rr1.match(inputstr) is  None:
+            self.lineedit.setText('请填写正确输入IO码位值(0-9 a-f A-F)')
+            print(rr1.match(inputstr))
+            return
+        else:
+            print(rr1)
+            if len(self.lineedit.text().strip()) != len(rr1.match(inputstr)[0]):
+                self.lineedit.setText('请填写正确输入IO码位值(0-9 a-f A-F)')
+                return
+        data = []
+        valuestr = self.lineedit.text().strip()
+        print(valuestr)
+        for i in range(len(valuestr)):
+            if i%2 == 0 :
+                data.append(valuestr[i:i+2])
+
+        for i  in  range(len(data)):
+            data[i] = int(data[i],16)
+        if  bytelen  ==  expect_len:
+            print("iput len OK")
+            for  k in  range(expect_len):
+                for i  in range(0,8):
+                    print(i)
+                    temp  = 8*k+i
+                    if  temp < len(self.dbdata):
+                        self.byte_label_list[8*k+i].value = self.get_bit_value(data[k], i+1)
+                        self.byte_label_list[8*k+i].setvalue()
+        else:
+            QMessageBox.warning(self, '错误提示信息',"输入码位长度不对:%d 实际配置:%d 字节"%(bytelen,expect_len))
+
     def signal_updatavalue(self):
-        #print(self.signallineedit.text())
         getvalue = int(self.signallineedit.text(),16)
         index  =  int(self.signal_byteindex.currentText())
         print(getvalue, index )
@@ -162,7 +195,6 @@ class  myscript(QWidget):
             if i < len(self.dbdata):
                 bit_n = i%8
                 self.byte_label_list[i].value = self.get_bit_value(getvalue,bit_n+1)
-                #print((bit_n+1), self.byte_label_list[i].value )
                 self.byte_label_list[i].setvalue()
             else:
                 pass
@@ -173,7 +205,7 @@ class  myscript(QWidget):
             print("入参错误src大于0xFF")
         else:
             if nbit > 8 or nbit< 1:
-                print("入参错误nbit大于8 or nbit 小于1")
+                print("入参错误nbit大于8 or nbit 小于1: %d"%nbit)
             else:
                 #print((2**(8-nbit)), dst)
                 dst = src & (2**(8-nbit))
