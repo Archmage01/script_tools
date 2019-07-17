@@ -114,18 +114,15 @@ class  myscript(QScrollArea):
         expect_len =  len(self.dbdata)
         expect_len = int((expect_len + 7)/8)
         print(self.lineedit.text())
-        regex_input = '(([0-9]|[A-F]|[a-f])+)'
+        regex_input = '^[0-9a-fA-F]+$'
         inputstr = self.lineedit.text().strip()
         rr1 = re.compile(regex_input)
-        if rr1.match(inputstr) is  None:
+        if rr1.search(inputstr) is  None:
             self.lineedit.setText('请填写正确输入IO码位值(0-9 a-f A-F)')
-            print(rr1.match(inputstr))
+            QMessageBox.warning(self, '错误提示信息',"请输入合法的16进制数据(无0x)")
             return
         else:
             print(rr1)
-            if len(self.lineedit.text().strip()) != len(rr1.match(inputstr)[0]):
-                self.lineedit.setText('请填写正确输入IO码位值(0-9 a-f A-F)')
-                return
         data = []
         valuestr = self.lineedit.text().strip()
         print(valuestr)
