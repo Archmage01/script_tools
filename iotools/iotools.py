@@ -4,14 +4,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 #import numpy as np
 
-__version__ = "V0.0.3"
+__version__ = "V0.0.4"
 __auther__  = "Lancer"
-__modifytime__ = "201907016"
+__modifytime__ = "20190722"
 
 '''
 Version 0.0.1  20190707  创建本工具: 通过读取线路数据db文件,创建UI,便于查询驱动采集码位
 Version 0.0.2  20190707  重新布局UI  完善功能
 Version 0.0.3  20190716  支持查询全部数据(基本功能完成)
+Version 0.0.4  20190722  支持.c转DB文件  整条线路IO查询
 '''
 
 
@@ -20,8 +21,8 @@ class bitwidget(QWidget):
         super(bitwidget,self).__init__(parent)
         self.zero_pixmap = QtGui.QPixmap ("white.png")
         self.one_pixmap = QtGui.QPixmap ("green.png")
-        self.resize(200,20)
-        self.setFixedSize(200,20) #w h
+        self.resize(250,20)
+        self.setFixedSize(250,20) #w h
         self.mainlayout = QHBoxLayout(self) 
         self.labelname = QLabel(labelnames,self) #
         self.labelname.setAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -62,14 +63,23 @@ class  myscript(QScrollArea):
         #读取db文件
         dlg = QFileDialog()
         self.filenames = []
+        self.db_taable_list = [ ]
 
         if dlg.exec_():
             filenames= dlg.selectedFiles()
         print(os.getcwd())
         conn = sqlite3.connect(filenames[0])
         c = conn.cursor()
-        c.execute("""select * from  driverinfo""")
+        c.execute("""select * from  standard_input_map""")
         self.dbdata = c.fetchall()
+        c.execute("select name from sqlite_master where type='table' order by name")
+        lllll = c.fetchall()
+        print(lllll,len(lllll))
+        for  i  in  range(len(lllll)):
+            print(lllll[i][0])
+            self.db_taable_list.append(lllll[i][0])
+        #print(self.db_taable_list)
+
         #UI 创建处理UI分布
         self.lineedit    = QLineEdit()
         self.upbtn = QPushButton("查询IO码位")
@@ -93,13 +103,13 @@ class  myscript(QScrollArea):
         if self.boardnum*200 <  self.width*3/4:
             self.mainwidget.resize(self.width*3/4, self.height*3/4) #reset size
         else:
-            self.mainwidget.resize(self.boardnum*200,self.height) #reset size
+            self.mainwidget.resize(self.boardnum*250,self.height) #reset size
 
         self.byte_label_list = []
         for i in  range(len(self.dbdata)): 
             tttbut = bitwidget("%s %s"%(i,self.dbdata[i][1]),self.mainwidget) # 6  1
             self.byte_label_list.append(tttbut)
-            self.byte_label_list[i].move(200*int(i/24), 20*int(i%24)+50+(int(i%24)))
+            self.byte_label_list[i].move(250*int(i/24), 20*int(i%24)+50+(int(i%24)))
         #信号槽
         self.upbtn.clicked.connect(self.updatavalue)
         self.clear_upbtn.clicked.connect(self.clear_io)
