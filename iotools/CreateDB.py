@@ -21,8 +21,7 @@ class  CreateDB(object):
         self.read_iotable_cfile()
         for  i in range(len(self.io_table_list)):
             pass
-            print(self.io_table_list[i])
-
+            #print(self.io_table_list[i])
         self.write_all_table()
 
     def  read_iotable_cfile(self):
@@ -37,7 +36,6 @@ class  CreateDB(object):
                 convert_lines = convert_lines.replace('\n','').replace('\t','').replace(' ','')
                 convert_lines =  re.sub(r"/\*.*\*/","",convert_lines)
                 convert_lines = re.sub(r"#.*\"", "", convert_lines)
-                #print(convert_lines,type(convert_lines))
                 name_test = name_pattern.findall(convert_lines)
                 if  name_test is not None:
                     for  i  in  range(len(name_test)):
@@ -62,20 +60,24 @@ class  CreateDB(object):
                             #per_table[i] = per_table[i].replace("(", "#").replace(")", "").split("_")[-1]
                         per_table.pop()
                         self.io_table_list.append(per_table)
-                        print(per_table)
                     else:
-                        print("匹配{ }失败")
+                        pass
+                        #print("匹配{ }失败")
 
 
         else:
             print("io_table.c 文件不存在")
 
     def  write_all_table(self):
+        if True == os.path.exists('test_io.db'):
+            os.remove("test_io.db")
         # self.db_table_list = []  #存储每张表表
         # self.io_table_list = [ ] #存储所有表的数据
         if  len(self.db_table_list) ==  len(self.io_table_list):
             for  i  in  range(len(self.db_table_list)):
                 self.write_per_table(self.db_table_list[i],self.io_table_list[i])
+                print("写入表:%s len:%d %d "%(self.db_table_list[i],len(self.io_table_list[i]), i ))
+            print("写入表个数:%d 成功"%(len(self.db_table_list)))
         else:
             print("匹配表个数和表名个数不一致 请检查文件格式 %d  %d"%( len(self.db_table_list),len(self.io_table_list)))
 
@@ -85,8 +87,6 @@ class  CreateDB(object):
         '''
         将io_table.c文件中数据转化为db文件
         '''
-        dataass = [("0","liangsss" ),("1","ssssssssssss")]
-        print(dataass[0][0],dataass[0][1])
         con = sqlite3.connect("test_io.db")
         cur = con.cursor()
         try:
@@ -98,8 +98,6 @@ class  CreateDB(object):
                     cur.execute("insert into %s(inddex,io_name) values(?,?);"%(table_name), (i, table_data_list[i]))
                     con.commit()
             cur.execute("select name from sqlite_master where type='table' order by name")
-            print(cur.fetchall()
-)
             #cur.execute("insert into driverinfo(inddex,io_name) values(?,?);",(dataass[0][0], dataass[0][1]))
         except sqlite3.Error as e:
             print("An error occurred: %s", e.args[0])
