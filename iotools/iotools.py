@@ -8,15 +8,16 @@ import  os,sys,re,psutil,sqlite3
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 
-__version__ = "V0.0.4"
+__version__ = "V0.0.5"
 __auther__  = "Lancer"
-__modifytime__ = "20190722"
+__modifytime__ = "20190724"
 
 '''
 Version 0.0.1  20190707  创建本工具: 通过读取线路数据db文件,创建UI,便于查询驱动采集码位
 Version 0.0.2  20190707  重新布局UI  完善功能
 Version 0.0.3  20190716  支持查询全部数据(基本功能完成)
 Version 0.0.4  20190722  支持.c转DB文件  整条线路IO查询
+Version 0.0.5  20190724  支持大小端查询
 '''
 
 
@@ -62,6 +63,7 @@ class  myscript(QScrollArea):
         self.resize(self.width*3/4, self.height*3/4) #w h
         self.mainwidget = QWidget()
         self.setWidget(self.mainwidget)
+        self.mode = 1  #大端模式   0:小端模式
         self.dbdata = dbdata
 
         #UI 创建处理UI分布
@@ -71,9 +73,12 @@ class  myscript(QScrollArea):
         self.upbtn.setFixedSize(90,25)
         self.clear_upbtn = QPushButton("重置",self.mainwidget)
         self.clear_upbtn.setFixedSize(90,25)  #w h
+        self.mode_btn = QPushButton("大端",self.mainwidget)
+        self.mode_btn.setFixedSize(60,25)  #w h
         self.clear_upbtn.move(10, 10)
-        self.upbtn.move(100, 10)
-        self.lineedit.move(200, 10)
+        self.mode_btn.move(100, 10)
+        self.upbtn.move(170, 10)
+        self.lineedit.move(260, 10)
 
          #每个小单元存储24 io  计算个数
         self.iobitnum = int(len(self.dbdata))
@@ -91,6 +96,25 @@ class  myscript(QScrollArea):
         #信号槽
         self.upbtn.clicked.connect(self.updatavalue)
         self.clear_upbtn.clicked.connect(self.clear_io)
+        self.mode_btn.clicked.connect(self.set_mode)
+
+    def set_mode(self):
+        if 1 == self.mode:
+            self.mode = 0 
+            self.mode_btn.setText("小端")
+            self.mode_btn.setStyleSheet("background: green")
+        else:
+            self.mode = 1
+            self.mode_btn.setText("大端")
+            self.mode_btn.setStyleSheet("background: red")
+    #大小端转化
+    def valuechage(self,src):
+        ret = str(bin(src))[2:]
+        ret = ret[::-1]
+        length = 8 - len(ret)
+        for i in range(length):
+            ret = ret + "0"
+        return int(str(int(ret, 2)))
 
     def clear_io(self):
         for i in  range(self.iobitnum):
@@ -118,6 +142,8 @@ class  myscript(QScrollArea):
 
         for i  in  range(len(data)):
             data[i] = int(data[i],16)
+            if self.mode == 0: #小端模式
+                data[i] = self.valuechage(data[i])
         if  bytelen  ==  expect_len  :
             if  0 == (int(len(self.lineedit.text().strip()))%2):
                 print("iput len OK")
