@@ -11,6 +11,12 @@ from PyQt5.QtWidgets import *
 __VERSION__ = "0.0.2"
 __AUTHOR__ = "Lancer"
 
+black_qss = "QWidget{background:#F0FFFF} QPushButton{color:#9932CC} QGroupBox {border: 1px solid rgb(80, 80, 80);border-radius: 4px;} \
+QComboBox { background:#F0FFFF} \
+QLabel{color:#9932CC}  QLineEdit{color:#9932CC; border: 1px solid rgb(68, 69, 73) }\
+"
+
+
 class Tools_ui(QWidget):
     def  __init__(self, parent=None):
         super(Tools_ui,self).__init__(parent)
@@ -141,10 +147,11 @@ class Tools_ui(QWidget):
         self.filelist_layout.addLayout(self.list_widget_layout )
         self.file_list.setLayout(self.filelist_layout)
         #style  
-        #self.setStyleSheet("background: lightgray; color:red;")
+        #self.setStyleSheet("background:#FFFACD; color:red;border-color:#FF0000")
+        self.setStyleSheet(black_qss)
         # timer
         self.timer = QtCore.QTimer(self) #初始化一个定时器
-        self.timer.timeout.connect(self.app_loop) #计时结束调用operate()方法
+        self.timer.timeout.connect(self.app_loop) 
         self.timer.start(1000) #设置计时间隔并启动
         #connect 
         self.chage_btn.clicked.connect(self.chage_file_name)
