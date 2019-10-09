@@ -3,17 +3,24 @@
 # Author: Lancer  2019-09-09 10:09:56
 
 
-import  os,sys,re,psutil
+import  os,sys,re,psutil,copy
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 
-__VERSION__ = "0.0.1"
+
+__VERSION__ = "0.0.2"
 __AUTHOR__ = "Lancer"
+
+black_qss = "QWidget{background:#F0FFFF} QPushButton{color:#9932CC} QGroupBox {border: 1px solid rgb(80, 80, 80);border-radius: 4px;} \
+QComboBox { background:#F0FFFF} \
+QLabel{color:#9932CC}  QLineEdit{color:#9932CC; border: 1px solid rgb(68, 69, 73) }\
+"
+
 
 class Tools_ui(QWidget):
     def  __init__(self, parent=None):
         super(Tools_ui,self).__init__(parent)
-        self.resize(800,1000)
+        self.resize(1000,1000)
         self.setWindowTitle("文件名批量修改工具")
         self.current_dir = os.getcwd()
         self.filename_list =  os.listdir(self.current_dir)
@@ -21,6 +28,7 @@ class Tools_ui(QWidget):
         #print(self.filename_list )
         self.type_name = []
         self.dict_type_name = {}
+        self.old_dict_type_name = {}
         for i  in  range(len(self.filename_list)):
             file_type = self.filename_list[i].split(".")[-1]
             if  file_type not in  self.type_name:
@@ -42,11 +50,15 @@ class Tools_ui(QWidget):
         self.file_list = QGroupBox()
         self.file_list.setTitle("当前目录下文件列表")
         self.help_btn = QPushButton("关于本工具")
+        self.datetime = QtCore.QDateTime.currentDateTime()  
+        self.time_label = QLabel(self.datetime.toString(QtCore.Qt.DefaultLocaleLongDate))
         self.chage_btn = QPushButton("开始修改")
         self.file_label = QLabel("文件后缀:")
+        self.file_label.setAlignment( QtCore.Qt.AlignCenter)
         self.filetype = QComboBox()
         self.filetype.addItems(self.type_name)
         self.btn_layout = QHBoxLayout()
+        self.btn_layout.addWidget(self.time_label)
         self.btn_layout.addWidget(self.file_label)
         self.btn_layout.addWidget(self.filetype)
         self.btn_layout.addWidget(self.help_btn)
@@ -115,24 +127,33 @@ class Tools_ui(QWidget):
 
         # 文件列表显示
         self.filelist_layout = QVBoxLayout()
-        self.listWidget = QListWidget()
+        self.old_listWidget = QListWidget()
+        self.new_listWidget = QListWidget()
         self.filedirbtn_layout = QHBoxLayout()
-        self.clear_btn =  QPushButton("清空文件列表")
-        self.updata_btn = QPushButton("更新文件列表")
-        self.filedirbtn_layout.addWidget(self.clear_btn)
-        self.filedirbtn_layout.addWidget(self.updata_btn)
+        self.list_widget_layout = QHBoxLayout()
+        self.old_label = QLabel("旧文件列表")
+        self.new_label = QLabel("新文件列表")
+        self.old_label.setAlignment( QtCore.Qt.AlignCenter)
+        self.new_label.setAlignment( QtCore.Qt.AlignCenter)
+        self.filedirbtn_layout.addWidget(self.old_label)
+        self.filedirbtn_layout.addWidget(self.new_label)
         self.filedirframe = QFrame()
-        self.filedirframe.setLayout(self.filedirbtn_layout)
+        #
+        self.list_widget_layout.addWidget(self.old_listWidget)
+        self.list_widget_layout.addWidget(self.new_listWidget)
         #self.file_list
-        self.listWidget.addItems(self.dict_type_name[self.type_name[0]])
-        #self.listWidget.addItem("Item 2")
-        self.filelist_layout.addWidget(self.filedirframe)
-        self.filelist_layout.addWidget(self.listWidget)
+        self.old_listWidget.addItems(self.dict_type_name[self.type_name[0]])
+        self.filelist_layout.addLayout(self.filedirbtn_layout)
+        self.filelist_layout.addLayout(self.list_widget_layout )
         self.file_list.setLayout(self.filelist_layout)
-         
-        #style
-        #self.setStyleSheet("background: lightgray; color:red;")
-        #连接信号槽
+        #style  
+        #self.setStyleSheet("background:#FFFACD; color:red;border-color:#FF0000")
+        self.setStyleSheet(black_qss)
+        # timer
+        self.timer = QtCore.QTimer(self) #初始化一个定时器
+        self.timer.timeout.connect(self.app_loop) 
+        self.timer.start(1000) #设置计时间隔并启动
+        #connect 
         self.chage_btn.clicked.connect(self.chage_file_name)
         self.help_btn.clicked.connect(self.about_tools)
     #
@@ -158,16 +179,29 @@ class Tools_ui(QWidget):
         _file_type = self.filetype.currentText()
         num = len(self.dict_type_name[_file_type])
         new_name_list = self.get_name_type(num)
-        print(new_name_list)
+        temp_list = []
         print(self.dict_type_name[_file_type])
+        self.new_listWidget.clear()
+        self.old_listWidget.clear()
         for i in range(len(self.dict_type_name[_file_type])):
+            self.old_listWidget.addItem(self.dict_type_name[_file_type][i]+".%s"%_file_type)
             os.rename( self.dict_type_name[_file_type][i]+".%s"%_file_type, new_name_list[i]+".%s"%_file_type  )
-        #os.rename(old,new)
-        print("修改文件名")
+            self.new_listWidget.addItem( new_name_list[i]+".%s"%_file_type )
+            temp_list.append(new_name_list[i])
+        self.dict_type_name[_file_type] = copy.deepcopy(temp_list)
     #提示本工具信息
     def about_tools(self):
         QMessageBox.about(self,"关于","版本号:%s 作者:%s \n 发布时间:%s"%(__VERSION__,__AUTHOR__,"20190912" ))
-    
+    #
+    def app_loop(self):
+        #更新时间显示
+        self.datetime = QtCore.QDateTime.currentDateTime()  
+        self.time_label.setText(self.datetime.toString(QtCore.Qt.DefaultLocaleLongDate))
+        #更新文件列表
+        self.old_dict_type_name  = copy.deepcopy( self.dict_type_name )
+
+
+
 
 if __name__ == "__main__":
     app  = QApplication(sys.argv)
