@@ -9,8 +9,11 @@
 #                  src(该目录放源文件)
 #                  Cmakelist.txt (cmake文件)
 # 命令介绍:  cppbuilder init:   调用cmake工具 创建vs工程文件(工程目录下创建projects目录 生成项目文件在该目录下)
-#           cppbuilder build:  编译工程
+#            cppbuilder build:  编译工程
 #  本工具默认刷题使用 所以不会 生成头文件(只会单独生成.cpp 含main函数)
 #  加可选项:  生成标准工程  源文件头文件 分目录存储 
 
 ########################    Version0.0.2   支持增加单元测试文件  #########################
+# 增加命令: cppbuilder cppunit: 查看单元测试情况
+#           cppbuilder clean  : 工程清空命令
+#       支持cppunit框架 (需将cppunit安装到visual studio 20xx 具体方法网上有相关教程)

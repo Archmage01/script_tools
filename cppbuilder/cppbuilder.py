@@ -7,17 +7,19 @@ import  sys,os,re, getopt
 import  core  as  user
 
 __author__  = "yang.gan"
-__version__ = "version: 0.0.1"
-
+__version__ = "version: 0.0.2"
+__modifytime__ = "2019-10-31"
 
 def version_function():
-    print("    author:%s  version:%s"%(__author__, __version__))
+    print("    author:%s  version:%s time: %s "%(__author__, __version__,__modifytime__))
 
 
 cmd_dict = {
     "create" : user.create_project,   #创建工程 固定目录结构  cmake  源文件(.cpp)
     "init"   : user.init_project ,    #初始化工程 
     "build"  : user.build_project,    #
+    "cppunit": user.cppunit_test,    #
+    "clean"  : user.clean_project, 
 }
 
 
@@ -47,6 +49,8 @@ def usage():
     [cppbuilder create  projectname ] : 创建工程 固定目录结构  cmake  
     [cppbuilder init                ] : 初始化项目 拉取vs项目文件 
     [cppbuilder build               ] : 编译项目
+    [cppbuilder cppunit             ] : 查看cppunit  test结果
+    [cppbuilder clean               ] : 删除projects文件
     --------------------------------------------------------------------------------
     """   
     print(usagestr)
