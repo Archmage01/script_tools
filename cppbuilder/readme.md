@@ -4,7 +4,6 @@
 
 
     |  CMakeLists.txt  --顶层cmake文件
-    |  
     |——target       --用于存放生成的target文件
     |——cmake        --cmake文件
     |——lib          --外部依赖的库文件
@@ -13,5 +12,6 @@
         |——include  --模块内部头文件
         |——main     --源代码
         |——cppunit  --单元测试
+        CMakeLists.txt
 
 ---
