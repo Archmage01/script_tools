@@ -11,31 +11,32 @@ def  create_project(projectname):
         if 0 == len(projectname):
             print("cmd err: [ create projectname ]")
             return 
-        # os.mkdir("%s"%projectname[0])
-        # os.chdir("%s"%projectname[0])
-        os.mkdir("lib")
         str_template_cmake = {"prjname":projectname[0] }
         with  open('CMakeLists.txt',mode="w",encoding='utf-8') as file:
             file.write(template_str.sig_cmake%(str_template_cmake)) #创建CMakeList.txt
             file.close()
-        os.mkdir("src")
-        os.chdir("src")
+        os.makedirs('src/main')
+        os.makedirs('src/include')
+        os.makedirs('src/test_cppunit')
+        os.chdir("src/main")
         with  open('%s.cpp'%projectname[0],mode="w",encoding='utf-8') as file:
             file.write(template_str.cppfile_template) #projectname.cpp
             file.close()
-        os.chdir(rootpath)
-        os.mkdir("test")
-        os.chdir("test")
+            os.chdir(rootpath)
+        os.chdir("src/test_cppunit")
         str_template_ntest = {"prjname":projectname[0] }
         with  open('%s_test.cpp'%projectname[0],mode="w",encoding='utf-8') as file:
             file.write(template_str.cppunit_testfile%(str_template_ntest) ) #projectname.cpp
             file.close()
+            os.chdir(rootpath)
     else:
-        print("目录非空 请在空目录下执行创建工程命令")
+        print("dir not  empty  please  create in empty dir")
 
 
 
 def  init_project( op=None ):
+    if False == os.path.exists("lib"):
+        os.mkdir("lib")
     if True == os.path.exists("projects"):
         pass
     else:
@@ -44,17 +45,27 @@ def  init_project( op=None ):
     os.system("cmake  .. && cd ..")
 
 def  build_project(op=None):
-        os.system("cmake --build projects    ")
+    if  False == os.path.exists("target"):
+        os.mkdir("target")
+    os.system("cmake --build projects    ")
 
 def  cppunit_test(op=None):
     rootpath =  os.getcwd()
-    os.chdir("projects/Debug")
-    print("chdir>> ",os.getcwd() )
-    names = os.listdir(os.getcwd())  
-    for name in names:
-        if name.endswith('.exe') and  name.startswith("cppunit_"): 
-            os.system(name)
-            break 
+    if True == os.path.exists("target"):
+        os.chdir("projects/Debug")
+        print("chdir>> ",os.getcwd() )
+        names = os.listdir(os.getcwd())  
+        for name in names:
+            if name.endswith('.exe') and  name.startswith("cppunit_"): 
+                shutil.copy(name, rootpath+"\target")
+                os.chdir(rootpath+"\target")
+                os.system(name)
+                break 
+    else:
+        print("cppunit target not find ")
+        return 0 
+
+
 
 def  clean_project(op=None):
     if True == os.path.exists("projects"):

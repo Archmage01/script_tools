@@ -6,8 +6,8 @@
 import  sys,os,re, getopt
 import  core  as  user
 
-__author__  = "yang.gan"
-__version__ = "version: 0.0.2"
+__author__  = "Lancer"
+__version__ = " 0.0.1"
 __modifytime__ = "2019-10-31"
 
 def version_function():
@@ -18,7 +18,7 @@ cmd_dict = {
     "create" : user.create_project,   #创建工程 固定目录结构  cmake  源文件(.cpp)
     "init"   : user.init_project ,    #初始化工程 
     "build"  : user.build_project,    #
-    "cppunit": user.cppunit_test,    #
+    "utest"  : user.cppunit_test,    #
     "clean"  : user.clean_project, 
 }
 
@@ -46,11 +46,11 @@ def main():
 def usage():   
     usagestr = \
     """    --------------------------------  工具命令介绍  --------------------------------
-    [cppbuilder create  projectname ] : 创建工程 固定目录结构  cmake  
-    [cppbuilder init                ] : 初始化项目 拉取vs项目文件 
-    [cppbuilder build               ] : 编译项目
-    [cppbuilder cppunit             ] : 查看cppunit  test结果
-    [cppbuilder clean               ] : 删除projects文件
+    [ create  projectname ] : 创建工程 固定目录结构  cmake  
+    [ init                ] : 初始化项目 拉取vs项目文件 
+    [ build               ] : 编译项目
+    [ cppunit             ] : 查看cppunit  test结果
+    [ clean               ] : 删除projects文件
     --------------------------------------------------------------------------------
     """   
     print(usagestr)
