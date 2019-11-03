@@ -43,7 +43,7 @@ SET( cppunit_test  cppunit_%(prjname)s_test )
 SET( ROOTPATH ${CMAKE_SOURCE_DIR})
 
 # defining common source variables
-aux_source_directory(src   SRC )
+aux_source_directory(main   SRC )
 aux_source_directory(test_cppunit  TESTSRC )
 
 
