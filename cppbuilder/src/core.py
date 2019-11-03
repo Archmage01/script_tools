@@ -21,8 +21,13 @@ class usr_core(object):
             "build"  : self.build_project,    
             "utest"  : self.cppunit_test,    
             "clean"  : self.clean_project, 
+            "result" : self.show_lintcode_result,
         }
         self.args_paraser(args_list, opts)
+
+    def  print_help(self):
+        print("author: %s version:%s time:%s "%(__author__,__version__ ,  __modifytime__ ))
+
 
     def  write_file(self,  file_path, template_str):
         """
@@ -51,12 +56,22 @@ class usr_core(object):
         elif 1 == len(args_list):
             if args_list[0]  in self.cmd_dict:
                 self.cmd_dict[args_list[0]]()
-            pass
+            else:
+                pass
         elif  2 == len(args_list):
             if  "create" == args_list[0]:
                 self.project_name = args_list[1]
                 self.create_project()
+        else:
+            pass
+        
+        for long_opts  in opts:
+            if "--lint" in  long_opts :  #create  lintcode/leetcode paractice project 
+                logging.info("create  lintcode/leetcode paractice project")
+                self.special_project_create()
 
+            if "--version" in  long_opts :
+                self.print_help()
 
 
     ################################## usr tools public API  #########################################
@@ -77,6 +92,24 @@ class usr_core(object):
             self.write_file( r"src\include\%s.h"%self.project_name," ") 
         else:
             logging.error("dir not  empty  please  create in empty dir")
+
+    def special_project_create(self):
+        self.project_name = "Solution"
+        if not os.listdir(os.getcwd()):  
+            projectname = {"prjname": self.project_name }
+            self.write_file(r"CMakeLists.txt",  cmake.topcmake%(projectname) ) 
+            self.write_file(r"src\CMakeLists.txt",  cmake.lintcode_cmake ) 
+            #write  cppunit  test file 
+            self.write_file(r"src\test_cppunit\%s_test.cpp"%(self.project_name)  ,(cppformat.cppunit_testfile%(projectname)) ) 
+            self.write_file(r"src\test_cppunit\main_cppunit.cpp",  cppformat.cppunit_testmain ) 
+            #write  cpp/h  src file 
+            self.write_file( r"src\main\%s.cpp"%self.project_name,cppformat.cppfile_template_lintcode ) 
+    
+    def show_lintcode_result(self):
+        if  True == os.path.exists("target"):
+            os.chdir("target")
+            os.system("t_Solution.exe")
+
 
     def  init_project(self):
         if False == os.path.exists("lib"):

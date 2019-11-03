@@ -9,12 +9,14 @@ import  core  as  user
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ha", ["help", "output="] )
+        opts, args = getopt.getopt(sys.argv[1:], "", ["lint","version"] )
     except getopt.GetoptError as err:
         print(err) # will print something like "option -a not recognized"
         sys.exit(2)    
     #  usr interface 
     logging.basicConfig(level=logging.INFO,format="")
+    # print(opts)
+    # print(args)
     test = user.usr_core(args, opts )
 
 

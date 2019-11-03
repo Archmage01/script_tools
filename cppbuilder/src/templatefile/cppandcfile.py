@@ -78,3 +78,25 @@ cppfile_template = \
 
 
 """
+
+cppfile_template_lintcode = \
+"""
+#include <iostream>
+
+using  namespace  std ;
+
+class Solution {
+public:
+    void test()
+    {
+
+    }
+};
+
+
+void  main()
+{
+    
+}
+
+"""

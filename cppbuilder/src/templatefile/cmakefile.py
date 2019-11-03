@@ -80,3 +80,25 @@ endif(TESTSRC)
 
 message(">>>> cppbuilder init end <<<<")
 """
+
+
+lintcode_cmake = \
+"""
+# Auto CMakeLists.txt: use for lintcode/leetcode 
+# minimum  cmake  version  
+cmake_minimum_required(VERSION 3.7)
+
+# top  project name
+SET( mname  Solution  )
+
+# defining common source variables
+aux_source_directory(main   SRC )
+aux_source_directory(test_cppunit  TESTSRC )
+
+message(">>>> cppbuilder init start:")
+if(SRC)
+    add_executable( t_${mname}  ${SRC} )
+endif(SRC)
+
+message(">>>> cppbuilder init end <<<<")
+"""
