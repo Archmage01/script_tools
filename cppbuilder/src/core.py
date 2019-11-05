@@ -99,9 +99,6 @@ class usr_core(object):
             projectname = {"prjname": self.project_name }
             self.write_file(r"CMakeLists.txt",  cmake.topcmake%(projectname) ) 
             self.write_file(r"src\CMakeLists.txt",  cmake.lintcode_cmake ) 
-            #write  cppunit  test file 
-            self.write_file(r"src\test_cppunit\%s_test.cpp"%(self.project_name)  ,(cppformat.cppunit_testfile%(projectname)) ) 
-            self.write_file(r"src\test_cppunit\main_cppunit.cpp",  cppformat.cppunit_testmain ) 
             #write  cpp/h  src file 
             self.write_file( r"src\main\%s.cpp"%self.project_name,cppformat.cppfile_template_lintcode ) 
     
@@ -163,9 +160,9 @@ class usr_core(object):
     def  clean_project(self):
         if True == os.path.exists("projects"):
             shutil.rmtree("projects")
-        else:
-            logging.info("no dir projects already clean  cmakefile")
-        pass
-
+        if True == os.path.exists("target"):
+            shutil.rmtree("target")
+        if True == os.path.exists("lib"):
+            shutil.rmtree("lib")
 if __name__ == "__main__":
     pass

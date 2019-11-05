@@ -93,12 +93,11 @@ SET( mname  Solution  )
 
 # defining common source variables
 aux_source_directory(main   SRC )
-aux_source_directory(test_cppunit  TESTSRC )
 
-message(">>>> cppbuilder init start:")
+message(">>>> cppbuilder init start: \n")
 if(SRC)
     add_executable( t_${mname}  ${SRC} )
 endif(SRC)
 
-message(">>>> cppbuilder init end <<<<")
+message(">>>> cppbuilder init end <<<<\n")
 """
