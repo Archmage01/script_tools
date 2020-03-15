@@ -46,6 +46,7 @@ def strtolist(src_str):
     src_str = src_str.strip().replace(' ','')
     if 1 == (len(src_str)%2):
         print("输入错误!")
+        print(len(src_str))
         return
     for i  in range( (len(src_str)+1)//2 ):
         temp = 0
