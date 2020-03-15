@@ -17,6 +17,25 @@ def toStr(num,base):
     else:
         return toStr(num//base,base)  + convertString[num%base]
 
+def  tohexstr(src_arr):
+    if True == isinstance(src_arr, list):
+        hex_array = ["0x"]
+        for item in src_arr:
+            hex_array.append('%02X' % item)
+        return "".join(hex_array)
+    elif True == isinstance(src_arr, int):
+        #补齐2 4 8位
+        hex_array = ["0x"]
+        if src_arr<= 0xFF:
+            hex_array.append('%02X' % src_arr)
+        elif  src_arr<= 0xFFFF and src_arr > 0xFF :
+            hex_array.append('%04X' % src_arr)
+        elif src_arr<= 0xFFFFFFFF and src_arr > 0xFFFF:
+            hex_array.append('%08X' % src_arr)
+        else:
+            hex_array.append('%X' % src_arr)
+        return "".join(hex_array)
+
 def strtolist(src_str):
     '''
     将协议数据流字符串转化为列表
@@ -55,5 +74,7 @@ def   print_list(src):
 
 if __name__ == '__main__':
     print(strtolist("   40 ff 55aa"))
-    print_list([9,3])
-    print_list((8,9))
+    # print_list([9,3])
+    # print_list((8,9))
+    print(tohexstr(0x1))
+    print(tohexstr(0x121))
