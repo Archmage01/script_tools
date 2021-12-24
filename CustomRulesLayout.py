@@ -43,13 +43,16 @@ class LayoutAnalysisV(object):
             if childnums[i].startswith("A"):
                 num = int(childnums[i].replace('A',''))
                 childlayout.addWidget(childuilist[i], num )
+                childlayout.setSpacing(0)
                 childlayout.addStretch(1)
             elif childnums[i].startswith("B"):
                 num = int(childnums[i].replace('B', ''))
+                childlayout.setSpacing(0)
                 childlayout.addStretch(1)
                 childlayout.addWidget(childuilist[i], num)
             else:
                 childlayout.addWidget(childuilist[i], int(childnums[i]))
+                childlayout.setSpacing(0)
         # add childlayout
         if topnum.endswith("A"):
             topnum = int(topnum.replace("A",""))

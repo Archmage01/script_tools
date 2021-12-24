@@ -9,7 +9,18 @@ import sys,os,time
 '''
 自定义无边框widget:
     1 基本功能: 最大化,最小化,关闭,拖动窗口
+    2 菜单栏等其他自行添加
 '''
+
+class QssLoad(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def load_style(selfstyle: str):
+        with open('qss/%s'%(selfstyle), 'r', encoding='utf8') as f:
+            return f.read()
+
 
 class TitleBar(QWidget):
     windowMinimumed = pyqtSignal()       # 窗口最小化信号
@@ -21,25 +32,28 @@ class TitleBar(QWidget):
     def __init__(self, *args, **kwargs):
         super(TitleBar, self).__init__(*args, **kwargs)
         # 支持qss设置背景
-        self.setAttribute(Qt.WA_StyledBackground, True)
+        #self.setAttribute(Qt.WA_StyledBackground, True)
         self.mPos = None
         self.iconSize = 20  # 图标的默认大小
         # 设置默认背景颜色,否则由于受到父窗口的影响导致透明
-        self.setAutoFillBackground(True)
-        palette = self.palette()
-        palette.setColor(palette.Window, QColor(240, 240, 240))
-        self.setPalette(palette)
+        # self.setAutoFillBackground(True)
+        # palette = self.palette()
+        # palette.setColor(palette.Window, QColor(240, 240, 240))
+        # self.setPalette(palette)
         # 布局
         layout = QHBoxLayout(self, spacing=0)
+        self.setLayout(layout)
         layout.setContentsMargins(0, 0, 0, 0)
         # 窗口图标
         self.iconLabel = QLabel(self)
 #         self.iconLabel.setScaledContents(True)
         layout.addWidget(self.iconLabel)
+        layout.addSpacing(0)
         # 窗口标题
         self.titleLabel = QLabel(self)
         self.titleLabel.setMargin(0)
         layout.addWidget(self.titleLabel)
+        layout.addSpacing(0)
         # 中间伸缩条
         layout.addSpacerItem(QSpacerItem(
             40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
@@ -138,7 +152,10 @@ class CustomWidget(QWidget):
         self.setLayout(self.mainlayout)
         self.titleBar  =  TitleBar()
         self.mainlayout.addWidget(self.titleBar)
+        self.mainlayout.setSpacing(0)
         self.mainlayout.setContentsMargins(0,0,0,0)
+        #菜单栏
+        self.menubar = QMenuBar(self)
         #slot
         self.titleBar.windowMinimumed.connect(self.showMinimized)
         self.titleBar.windowMaximumed.connect(self.showMaximized)
@@ -150,16 +167,13 @@ class CustomWidget(QWidget):
         self.Direction = None
         self.installEventFilter(self)
 
-    #子控件widget
-    def setCenterWidget(self, wedget, stretch=0 ):
-        self.mainlayout.addWidget(wedget,stretch)
-        self.mainlayout.addStretch()
+    def addMenu(self, menubar):
+        self.mainlayout.insertWidget(1, menubar)
+        self.mainlayout.setSpacing(0)
 
-    #子控件layout
-    def setCenterLayout(self, layout, stretch=10 ):
-        self.mainlayout.addLayout(layout,stretch )
-        self.mainlayout.addStretch()
-
+    #设置标题栏stylesheet
+    def settitleBarstylesheet(self,style):
+        self.titleBar.setStyleSheet(style)
 
     def showNormal(self):
         """还原,要保留上下左右边界,否则没有边框无法调整"""
@@ -325,10 +339,21 @@ class CustomWidget(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = CustomWidget()
-    ex.setWindowTitle("====自用标签=====")
-    ttt = QWidget(ex)
-    #ttt.setStyleSheet("background-color:rgb(255,250,205)")
-    ex.setStyleSheet("background-color:rgb(255,250,205)")
-    ex.setCenterWidget(ttt)
+    test = CustomWidget()
+    test.setWindowTitle("自定义窗口")
+    
+    #菜单
+    menubar = QMenuBar()
+    ttt = menubar.addMenu("文件")
+    sel = menubar.addMenu("选择")
+    ttt.addAction("新建")
+    sel.addAction("全选")
+    
+    frame = QFrame()
+    frame.setFixedHeight(200)
+    frame.setStyleSheet("background-color:#3c3c3c")
+    test.mainlayout.addWidget(frame)
+    test.addMenu(menubar)
+    test.mainlayout.addStretch()
+
     sys.exit(app.exec_())   
